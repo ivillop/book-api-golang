@@ -3,7 +3,9 @@ package controllers
 import (
 	"book-api-golang/config"
 	"book-api-golang/models"
+	"math"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,7 +16,44 @@ var books = []models.Book{
 
 func GetBooks(c *gin.Context) {
 	var books []models.Book
-	config.DB.Find(&books)
+
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 10
+	}
+
+	offset := (page - 1) * limit
+
+	var total int64
+	config.DB.Model(&models.Book{}).Count(&total)
+
+	result := config.DB.
+		Limit(limit).
+		Offset(offset).
+		Find(&books)
+
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Gagal mengambil data buku",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": books,
+		"pagination": gin.H{
+			"page":       page,
+			"limit":      limit,
+			"total_data": total,
+			"total_page": int(math.Ceil(float64(total) / float64(limit))),
+		},
+	})
+
 	c.JSON(http.StatusOK, books)
 }
 
