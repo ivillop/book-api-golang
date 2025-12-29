@@ -2,14 +2,23 @@ package routes
 
 import (
 	"book-api-golang/controllers"
+	"book-api-golang/middlewares"
 
 	"github.com/gin-gonic/gin"
 )
 
 func BookRoutes(r *gin.Engine) {
+
+	r.POST("/login", controllers.Login)
+
 	r.GET("/books", controllers.GetBooks)
 	r.GET("/books/:id", controllers.GetBookById)
-	r.POST("/books", controllers.CreateBook)
-	r.PUT("/books/:id", controllers.UpdateBook)
-	r.DELETE("/books/:id", controllers.DeleteBook)
+
+	auth := r.Group("/")
+	auth.Use(middlewares.JWTAuth())
+	{
+		auth.POST("/books", controllers.CreateBook)
+		auth.PUT("/books/:id", controllers.UpdateBook)
+		auth.DELETE("/books/:id", controllers.DeleteBook)
+	}
 }
