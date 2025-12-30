@@ -1,40 +1,67 @@
 package controllers
 
 import (
+	"book-api-golang/helpers"
+	"book-api-golang/models"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 )
 
-var jwtKey = []byte("rahasia_jwt")
+var users = []models.User{}
+var userID uint = 1
 
-func Login(c *gin.Context) {
+func Register(c *gin.Context) {
 	var input struct {
-		Username string `json:"username"`
+		Name     string `json:"name"`
+		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Input tidak valid"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if input.Username != "admin" || input.Password != "12345" {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Login gagal"})
+	hashedPassword, _ := helpers.HashPassword(input.Password)
+
+	user := models.User{
+		ID:       userID,
+		Name:     input.Name,
+		Email:    input.Email,
+		Password: hashedPassword,
+	}
+
+	users = append(users, user)
+	userID++
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Register berhasil"})
+}
+
+func Login(c *gin.Context) {
+	var input struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	claims := jwt.MapClaims{
-		"username": input.Username,
-		"exp":      time.Now().Add(1 * time.Hour).Unix(),
+	for _, user := range users {
+		if user.Email == input.Email &&
+			helpers.CheckPassword(user.Password, input.Password) {
+			token, _ := helpers.GenerateToken(user.ID, user.Email)
+
+			c.JSON(http.StatusOK, gin.H{
+				"token": token,
+			})
+			return
+		}
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, _ := token.SignedString(jwtKey)
-
-	c.JSON(http.StatusOK, gin.H{
-		"token": tokenString,
+	c.JSON(http.StatusUnauthorized, gin.H{
+		"error": "Email atau password salah",
 	})
 }
