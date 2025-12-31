@@ -11,6 +11,15 @@ import (
 var users = []models.User{}
 var userID uint = 1
 
+// Register godoc
+// @Summary Register user baru
+// @Description Register user dengan password hash
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param body body map[string]string true "Register Data"
+// @Success 201 {object} map[string]string
+// @Router /register [post]
 func Register(c *gin.Context) {
 	var input struct {
 		Name     string `json:"name"`
@@ -38,6 +47,16 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "Register berhasil"})
 }
 
+// Login godoc
+// @Summary Login user
+// @Description Login dan mendapatkan JWT Token
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param body body map[string]string true "Login Data"
+// @Success 200 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Router /login [post]
 func Login(c *gin.Context) {
 	var input struct {
 		Email    string `json:"email"`

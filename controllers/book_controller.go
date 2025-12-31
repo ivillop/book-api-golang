@@ -14,6 +14,12 @@ var books = []models.Book{
 	{ID: 1, Judul: "Belajar Golang", Penulis: "Akbar", Tahun: 2024},
 }
 
+// GetBooks godoc
+// @Summary Get semua buku
+// @Tags Books
+// @Produce json
+// @Success 200 {array} models.Book
+// @Router /books [get]
 func GetBooks(c *gin.Context) {
 	var books []models.Book
 
@@ -57,6 +63,13 @@ func GetBooks(c *gin.Context) {
 	c.JSON(http.StatusOK, books)
 }
 
+// GetBookById godoc
+// @Summary Get buku by ID
+// @Tags Books
+// @Produce json
+// @Param id path int true "Book ID"
+// @Success 200 {object} models.Book
+// @Router /books/{id} [get]
 func GetBookById(c *gin.Context) {
 	var book models.Book
 	id := c.Param
@@ -69,6 +82,14 @@ func GetBookById(c *gin.Context) {
 	c.JSON(http.StatusOK, book)
 }
 
+// CreateBook godoc
+// @Summary Tambah buku
+// @Tags Books
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Success 201 {object} models.Book
+// @Router /books [post]
 func CreateBook(c *gin.Context) {
 	var book models.Book
 
@@ -81,6 +102,15 @@ func CreateBook(c *gin.Context) {
 	c.JSON(http.StatusCreated, book)
 }
 
+// UpdateBook godoc
+// @Summary Update buku
+// @Tags Books
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param id path int true "Book ID"
+// @Success 200 {object} models.Book
+// @Router /books/{id} [put]
 func UpdateBook(c *gin.Context) {
 	var book models.Book
 	id := c.Param("id")
@@ -99,6 +129,13 @@ func UpdateBook(c *gin.Context) {
 	c.JSON(http.StatusOK, book)
 }
 
+// DeleteBook godoc
+// @Summary Hapus buku
+// @Tags Books
+// @Security BearerAuth
+// @Param id path int true "Book ID"
+// @Success 200 {object} map[string]string
+// @Router /books/{id} [delete]
 func DeleteBook(c *gin.Context) {
 	var book models.Book
 	id := c.Param("id")
